@@ -13,7 +13,6 @@ jobs:
             eho "Done-Completed-Bye"
       
   Testings-muliple-jobs:
-    needs: multiline-cmd-job
     runs-on: self-hosted
     steps:
       - name: Deploy multiple jobs
