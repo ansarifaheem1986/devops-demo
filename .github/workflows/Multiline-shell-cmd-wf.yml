@@ -1,0 +1,14 @@
+name: Multiline shell cmd
+on: workflow_dispatch
+jobs:
+  multiline-cmd-job:
+    runs-on: self-hosted
+    steps:
+      - name: Multiline shell commands jobs
+        run: |
+            echo "First Input"
+            echo "First Output"
+            ehco "Second Input"
+            echo "Second Output"
+            echo "Done-Completed-Bye"
+      
