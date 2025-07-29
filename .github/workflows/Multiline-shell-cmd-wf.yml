@@ -8,7 +8,7 @@ jobs:
         run: |
             echo "First Input"
             echo "First Output"
-            ehco "Second Input"
+            echo "Second Input"
             echo "Second Output"
             echo "Done-Completed-Bye"
       
