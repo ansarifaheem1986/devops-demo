@@ -10,9 +10,10 @@ jobs:
             echo "First Output"
             echo "Second Input"
             echo "Second Output"
-            eho "Done-Completed-Bye"
+            echo "Done-Completed-Bye"
       
   Testings-muliple-jobs:
+    needs: multiline-cmd-job
     runs-on: self-hosted
     steps:
       - name: Deploy multiple jobs
