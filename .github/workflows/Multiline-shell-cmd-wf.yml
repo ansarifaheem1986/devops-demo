@@ -10,7 +10,7 @@ jobs:
             echo "First Output"
             echo "Second Input"
             echo "Second Output"
-            echo "Done-Completed-Bye"
+            eho "Done-Completed-Bye"
       
   Testings-muliple-jobs:
     needs: multiline-cmd-job
