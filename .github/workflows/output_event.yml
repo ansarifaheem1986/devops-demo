@@ -1,4 +1,4 @@
-name: Output the event of the GitHub
+name: Output the event of GitHub
 on: [ issues, workflow_dispatch ]
 jobs:
   info:
