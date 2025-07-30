@@ -1,5 +1,7 @@
 name: Output the event of GitHub
-on: [ issues, workflow_dispatch ]
+on: 
+  issues:
+  workflow_dispatch:
 jobs:
   info:
     runs-on: self-hosted
