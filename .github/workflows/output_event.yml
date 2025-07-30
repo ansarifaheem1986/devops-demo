@@ -1,0 +1,8 @@
+name: Output the event of the GitHub
+on: [ issues, workflow_dispatch ]
+jobs:
+  info:
+    runs-on: self-hosted
+    steps:
+      - name: Output the GitHub and Event 
+        run: echo "${{ toJSON(github.event) }}"
