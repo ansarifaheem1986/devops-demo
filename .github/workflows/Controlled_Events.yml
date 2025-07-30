@@ -1,0 +1,14 @@
+name: Example Controlled Events
+on:
+  pull_request: 
+    types:
+      - opened
+  workflow_dispatch:
+jobs:
+  Events_test:
+    runs-on: self-hosted
+    steps:
+      - name: Controlled Event Testing
+        run: |
+            echo "Controlled Event Testing"
+            echo "Done!...."
