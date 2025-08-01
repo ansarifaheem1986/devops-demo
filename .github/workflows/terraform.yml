@@ -52,7 +52,7 @@ jobs:
             if [[ "$GITHUB_REF" == "refs/heads/azure_rg_create" ]]; then
               echo "Running terraform apply in $folder"
               terraform apply -auto-approve
-            elif [[ "$GITHUB_REF" == "refs/heads/azure_rg_destroy" ]]; then
+            elif [[ "$GITHUB_REF" == "refs/heads/azure_gr_destroy" ]]; then
               echo "Running terraform destroy in $folder"
               terraform destroy -auto-approve
             else
