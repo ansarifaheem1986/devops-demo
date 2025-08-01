@@ -52,9 +52,9 @@ jobs:
 
            terraform plan
 
-           if [[ "${GITHUB_REF}" == "ref/heads/azure_rg_create" ]]; then 
+           if [[ "${GITHUB_REF}" == "refs/heads/azure_rg_create" ]]; then 
               terraform apply -auto-approve
-           elif [[ "${GITHUB_REF}" == "ref/heads/azure_gr_destroy" ]]; then
+           elif [[ "${GITHUB_REF}" == "refs/heads/azure_gr_destroy" ]]; then
               terraform destroy -auto-approve
            fi
 
