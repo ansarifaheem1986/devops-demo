@@ -1,0 +1,8 @@
+name: Output information
+on: workflow_dispatch
+jobs:
+  info:
+    runs-on: self-hosted
+    steps:
+      - name: Output GitHug context
+        run: echo "${{ toJSON(github) }}"

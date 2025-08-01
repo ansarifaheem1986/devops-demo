@@ -1,5 +1,5 @@
 name: Azure Terraform deployment
-on:
+on: 
   push:
     branches:
       - azure_rg_create

@@ -8,7 +8,7 @@ terraform {
     version = ">= 4.25.0"
    }
   }
-      backend "azurerm" {
+    backend "azurerm" {
     resource_group_name  = "terraform-storage-files-01-rg"
     storage_account_name = "tfstatefilesdevprd"
     container_name       = "githubaction"
@@ -19,9 +19,10 @@ terraform {
 provider "azurerm" {
   features {}
   subscription_id = "d49174c3-680b-4508-a934-4fe38df8598f"
+   
 }
 resource "azurerm_resource_group" "myrg" {
-  name = "DevOps1-prod-eastus-01-rg"
+  name = "DevOps-prod-eastus-01-rg"
   location = "eastus"
-  #resource block to create the azure resource group
+  #resource block to create the azure resource group*/
 }

@@ -1,0 +1,11 @@
+name: First workflow
+on: workflow_dispatch 
+jobs:
+  first-job:
+    runs-on: self-hosted 
+    steps:
+      - name: Print Greeting
+        run: echo "Hello GitHub Action workflow"
+
+      - name: Print goodbye
+        run: echo "Done Completed-bye"
