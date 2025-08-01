@@ -5,10 +5,6 @@ on:
       - azure_rg_create
       - azure_gr_destroy
   workflow_dispatch:
-    inputs:
-      folder:
-        description: 'Terraform folder to "Processing"
-        required: false
     
 jobs:
   deploy:
@@ -49,6 +45,7 @@ jobs:
           IFS=',' read -ra ADDR <<< "${{ steps.get-folders.outputs.folders }}"
           for dir in "${ADDR[@]}"; do 
            echo "Processing folder: $dir"
+           cd "$dir" || { echo "Failed to cd into $dir"; exit 1; }
            echo "Current branch: $GITHUB_REF"
            echo "Changed folders: $folders"
            
