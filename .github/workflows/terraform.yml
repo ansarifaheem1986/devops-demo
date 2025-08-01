@@ -26,15 +26,18 @@ jobs:
           echo "Detecting changed Terraform fodlers..."
           folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
           | grep -Eo 'azure_resource_group_create/[^/]+/' | sort -u | tr '\n' ',' | sed 's/,$//')
-          echo "folders=$folders" >> GITHUB_OUTPUT
+          echo "folders=$folders" >> $GITHUB_OUTPUT
 
       - name: Run terrform per folder #Split folders into array and iterate   
         run: |
           IFS=',' read -ra ADDR <<< "${{ steps.get-folders.outputs.folders }}"
           for dir in "${ADDR[@]}"; do 
            echo "Processing folder: $dir"
-           cd "$dir"
+           echo "Current branch: $GITHUB_REF"
+           echo "Changed folders: $folders"
            
+           cd "$dir"
+
            terraform init
 
            terraform plan
