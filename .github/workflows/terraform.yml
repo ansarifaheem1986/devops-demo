@@ -25,7 +25,7 @@ jobs:
         id: set-folders
         run: |
           # Hardcode folders here (or list dynamically if you want all folders)
-          folders="azure_resource_group/01,azure_resource_group/02,azure_resource_group/03"
+          folders="azure_resource_group_create/01_rg,azure_resource_group_create/02_rg,azure_resource_group_create/03_rg"
           echo "folders=$folders" >> $GITHUB_OUTPUT
 
       - name: Run terraform per folder
