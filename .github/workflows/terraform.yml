@@ -1,80 +1,85 @@
 name: Azure Terraform deployment
-on: 
+
+on:
   push:
     branches:
       - azure_rg_create
-      - azure_gr_destroy
+      - azure_rg_destroy
   workflow_dispatch:
-    
+
 jobs:
   deploy:
     name: Azure RG deployment using GitHub Action and Terraform
-    runs-on: self-hosted  # or self-hosted if you have your own runner
+    runs-on: self-hosted
     outputs:
       changed-folders: ${{ steps.get-folders.outputs.folders }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Get Changed folders 
-        id: get-folders 
+      - name: Get Changed folders
+        id: get-folders
         run: |
-          echo "Detecting changed Terraform fodlers..."
-          
-          if [ "${{ github.event_name }}" = "push" ]; then
-          folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
-          | grep -Eo 'azure_resource_group_create/[^/]+/' | sort -u | tr '\n' ',' | sed 's/,$//')
+          echo "Detecting changed Terraform folders..."
 
-          else      
-            folders=$(ls -d azure_resource_group_create/*/ | tr '\n' ',' | sed 's/,$//')
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Get folders changed in the push event limited to azure_resource_group/ folders 01, 02, 03
+            folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
+              | grep -Eo 'azure_resource_group/[0-9]{2}/' | sort -u | tr '\n' ',' | sed 's/,$//')
+          else
+            # For manual runs, run on all known terraform folders
+            folders="azure_resource_group/01,azure_resource_group/02,azure_resource_group/03"
           fi
 
           echo "folders=$folders" >> $GITHUB_OUTPUT
-          echo "valu of $GITHUB_OUTPUT"
+          echo "Detected folders: $folders"
 
-      - name: Run terrform per folder #Split folders into array and iterate   
+      - name: Run terraform per folder
         run: |
           folders="${{ steps.get-folders.outputs.folders }}"
           echo "Current branch: $GITHUB_REF"
-          echo "Changed folders: $folders"
+          echo "Folders to process: $folders"
 
           if [ -z "$folders" ]; then
-            echo "No changed folders detected; skipping terraform steps."
+            echo "No changed folders detected; skipping Terraform steps."
             exit 0
           fi
 
-          IFS=',' read -ra ADDR <<< "${{ steps.get-folders.outputs.folders }}"
-          for dir in "${ADDR[@]}"; do 
-           echo "Processing folder: $dir"
-           cd "$dir" || { echo "Failed to cd into $dir"; exit 1; }
-           echo "Current branch: $GITHUB_REF"
-           echo "Changed folders: $folders"
-           
-           cd "$dir"
+          IFS=',' read -ra DIRS <<< "$folders"
 
-           terraform init
+          for dir in "${DIRS[@]}"; do
+            # Remove potential trailing slashes
+            folder=$(echo "$dir" | sed 's:/*$::')
+            echo "Processing folder: $folder"
 
-           terraform plan
+            if [ ! -d "$folder" ]; then
+              echo "Directory $folder does not exist, skipping."
+              continue
+            fi
 
-           if [[ "${GITHUB_REF}" == "refs/heads/azure_rg_create" ]]; then 
+            cd "$folder" || { echo "Failed to cd into $folder"; exit 1; }
+
+            echo "Running terraform init in $folder"
+            terraform init
+
+            echo "Running terraform plan in $folder"
+            terraform plan
+
+            if [[ "$GITHUB_REF" == "refs/heads/azure_rg_create" ]]; then
+              echo "Running terraform apply in $folder"
               terraform apply -auto-approve
-           elif [[ "${GITHUB_REF}" == "refs/heads/azure_gr_destroy" ]]; then
+            elif [[ "$GITHUB_REF" == "refs/heads/azure_rg_destroy" ]]; then
+              echo "Running terraform destroy in $folder"
               terraform destroy -auto-approve
-            else 
-              echo "Branch $GITHUB_REF does not trigger apply or destroy"  
-           fi
+            else
+              echo "Branch $GITHUB_REF does not trigger apply or destroy."
+            fi
 
-           cd -
-           done        
-      
-#Usage and details:
-#Push commits to the branch azure_rg_create to create/update the resource group.
-
-#Push commits (or even an empty commit) to the branch azure_rg_destroy to destroy the resources.
-
+            cd - > /dev/null
+          done
