@@ -21,23 +21,36 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Set folders to process
+        id: set-folders
+        run: |
+          # Hardcode folders here (or list dynamically if you want all folders)
+          folders="azure_resource_group/01,azure_resource_group/02,azure_resource_group/03"
+          echo "folders=$folders" >> $GITHUB_OUTPUT
+
       - name: Run terraform per folder
         run: |
-          # List all Terraform folders explicitly
-          folders="azure_resource_group/01_rg azure_resource_group/02_rg azure_resource_group/03_rg"
-
+          folders="${{ steps.set-folders.outputs.folders }}"
           echo "Current branch: $GITHUB_REF"
           echo "Folders to process: $folders"
 
-          for folder in $folders; do
+          if [ -z "$folders" ]; then
+            echo "No folders specified; exiting."
+            exit 0
+          fi
+
+          IFS=',' read -ra DIRS <<< "$folders"
+
+          for dir in "${DIRS[@]}"; do
+            folder=$(echo "$dir" | sed 's:/*$::')
+            echo "Processing folder: $folder"
+
             if [ ! -d "$folder" ]; then
               echo "Directory $folder does not exist; skipping."
               continue
             fi
 
-            echo "Processing folder: $folder"
-
-            cd "$folder" || { echo "Failed to enter directory $folder"; exit 1; }
+            cd "$folder" || { echo "Failed to cd into $folder"; exit 1; }
 
             echo "Running terraform init in $folder"
             terraform init
