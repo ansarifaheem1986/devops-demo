@@ -34,7 +34,7 @@ jobs:
       - name: Terraform Destory
         if: github.ref == 'refs/heads/azure_gr_destroy'
         working-directory: azure_resource_group_create/01_rg
-        run: terraform destory -auto-approve
+        run: terraform destroy -auto-approve
 
 #Usage and details:
 #Push commits to the branch azure_rg_create to create/update the resource group.
