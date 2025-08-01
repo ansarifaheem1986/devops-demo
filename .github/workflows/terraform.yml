@@ -1,9 +1,9 @@
 name: Azure Terraform deployment
-on:
-  push:
-    branches:
-      - azure_rg_create
-      - main
+on: workflow_dispatch
+  #push:
+    #branches:
+      #- azure_rg_create
+      #- main
 jobs:
   deploy:
     name: Azure RG deployment using GitHub Action and Terraform
