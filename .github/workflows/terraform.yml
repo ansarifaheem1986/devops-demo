@@ -8,30 +8,60 @@ jobs:
   deploy:
     name: Azure RG deployment using GitHub Action and Terraform
     runs-on: self-hosted  # or self-hosted if you have your own runner
+    outputs:
+      changed-folders: ${{ steps.get-folders.outputs.folders }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
+      
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Terraform Init
-        working-directory: azure_resource_group_create/01_rg
-        run: terraform init
+      - name: Get Changed folders 
+        id: get-folders 
+        run: |
+          echo "Detecting changed Terraform fodlers..."
+          folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
+          | grep -Eo 'azure_resource_group_create/[^/]+/' | sort -u | tr '\n' ',' | sed 's/,$//')
+          echo "folders=$folders" >> $GITHUB_OUTPUT
+          echo "valu of $GITHUB_OUTPUT"
 
-      - name: Terraform Plan
-        working-directory: azure_resource_group_create/01_rg
-        run: terraform plan
+      - name: Run terrform per folder #Split folders into array and iterate   
+        run: |
+          folders="${{ steps.get-folders.outputs.folders }}"
+          echo "Current branch: $GITHUB_REF"
+          echo "Changed folders: $folders"
 
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/azure_gr_create'
-        working-directory: azure_resource_group_create/01_rg
-        run: terraform apply -auto-approve
+          if [ -z "$folders" ]; then
+            echo "No changed folders detected; skipping terraform steps."
+            exit 0
+          fi
 
-      - name: Terraform Destory
-        if: github.ref == 'refs/heads/azure_gr_destory'
-        working-directory: azure_resource_group_create/01_rg
-        run: terraform destory -auto-approve
+          IFS=',' read -ra ADDR <<< "${{ steps.get-folders.outputs.folders }}"
+          for dir in "${ADDR[@]}"; do 
+           echo "Processing folder: $dir"
+           echo "Current branch: $GITHUB_REF"
+           echo "Changed folders: $folders"
+           
+           cd "$dir"
+
+           terraform init
+
+           terraform plan
+
+           if [[ "${GITHUB_REF}" == "refs/heads/azure_rg_create" ]]; then 
+              terraform apply -auto-approve
+           elif [[ "${GITHUB_REF}" == "refs/heads/azure_gr_destroy" ]]; then
+              terraform destroy -auto-approve
+           fi
+
+           cd -
+           done        
+      
+#Usage and details:
+#Push commits to the branch azure_rg_create to create/update the resource group.
+
+#Push commits (or even an empty commit) to the branch azure_rg_destroy to destroy the resources.
