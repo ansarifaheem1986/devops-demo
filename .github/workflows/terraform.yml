@@ -41,5 +41,9 @@ jobs:
            if [[ "${GITHUB_REF}" == "ref/heads/azure_rg_create" ]]; then 
               terraform apply -auto-approve
            elif [[ "${GITHUB_REF}" == "ref/heads/azure_gr_destroy" ]]; then
-              terraform destroy -auto-approve    
+              terraform destroy -auto-approve
+           fi
+
+           cd -
+           done        
       
