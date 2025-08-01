@@ -4,7 +4,7 @@ on:
     branches:
       - azure_rg_create
       - azure_gr_destroy
-      - workflow_disptach
+    workflow_disptach:
 jobs:
   deploy:
     name: Azure RG deployment using GitHub Action and Terraform
@@ -57,6 +57,8 @@ jobs:
               terraform apply -auto-approve
            elif [[ "${GITHUB_REF}" == "refs/heads/azure_gr_destroy" ]]; then
               terraform destroy -auto-approve
+            else 
+              echo "Branch $GITHUB_REF does not trigger apply or destroy"  
            fi
 
            cd -
