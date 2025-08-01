@@ -11,8 +11,6 @@ jobs:
   deploy:
     name: Azure RG deployment using GitHub Action and Terraform
     runs-on: self-hosted
-    outputs:
-      changed-folders: ${{ steps.get-folders.outputs.folders }}
 
     steps:
       - name: Checkout repository
@@ -23,45 +21,21 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Get Changed folders
-        id: get-folders
-        run: |
-          echo "Detecting changed Terraform folders..."
-
-          if [ "${{ github.event_name }}" = "push" ]; then
-            # Detect changed folders under 'azure_resource_group/XX/' where XX are digits
-            folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
-              | grep -Eo 'azure_resource_group/[0-9]{2}/' | sort -u | tr '\n' ',' | sed 's/,$//')
-          else
-            # No push event, assume manual trigger - run all known folders
-            folders="azure_resource_group/01,azure_resource_group/02,azure_resource_group/03"
-          fi
-
-          echo "folders=$folders" >> $GITHUB_OUTPUT
-          echo "Detected folders: $folders"
-
       - name: Run terraform per folder
         run: |
-          folders="${{ steps.get-folders.outputs.folders }}"
+          # List all Terraform folders explicitly
+          folders="azure_resource_group/01 azure_resource_group/02 azure_resource_group/03"
+
           echo "Current branch: $GITHUB_REF"
           echo "Folders to process: $folders"
 
-          if [ -z "$folders" ]; then
-            echo "No changed folders detected; skipping Terraform execution."
-            exit 0
-          fi
-
-          IFS=',' read -ra DIRS <<< "$folders"
-
-          for dir in "${DIRS[@]}"; do
-            # Remove trailing slash if exists
-            folder=$(echo "$dir" | sed 's:/*$::')
-            echo "Processing folder: $folder"
-
+          for folder in $folders; do
             if [ ! -d "$folder" ]; then
               echo "Directory $folder does not exist; skipping."
               continue
             fi
+
+            echo "Processing folder: $folder"
 
             cd "$folder" || { echo "Failed to enter directory $folder"; exit 1; }
 
