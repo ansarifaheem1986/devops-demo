@@ -24,7 +24,7 @@ jobs:
       - name: Run terraform per folder
         run: |
           # List all Terraform folders explicitly
-          folders="azure_resource_group/01 azure_resource_group/02 azure_resource_group/03"
+          folders="azure_resource_group/01_rg azure_resource_group/02_rg azure_resource_group/03_rg"
 
           echo "Current branch: $GITHUB_REF"
           echo "Folders to process: $folders"
