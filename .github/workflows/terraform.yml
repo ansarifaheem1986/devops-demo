@@ -27,9 +27,20 @@ jobs:
           folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
           | grep -Eo 'azure_resource_group_create/[^/]+/' | sort -u | tr '\n' ',' | sed 's/,$//')
           echo "folders=$folders" >> $GITHUB_OUTPUT
+          echo "valu of $GITHUB_OUTPUT"
 
       - name: Run terrform per folder #Split folders into array and iterate   
         run: |
+          folders="${{ steps.get-folders.outputs.folders }}"
+          echo "Current branch: $GITHUB_REF"
+          echo "Changed folders: $folders"
+
+          if [ -z "$folders" ]; then
+            echo "No changed folders detected; skipping terraform steps."
+            exit 0
+          fi
+
+
           IFS=',' read -ra ADDR <<< "${{ steps.get-folders.outputs.folders }}"
           for dir in "${ADDR[@]}"; do 
            echo "Processing folder: $dir"
