@@ -21,7 +21,7 @@ provider "azurerm" {
   subscription_id = "d49174c3-680b-4508-a934-4fe38df8598f"
 }
 resource "azurerm_resource_group" "myrg" {
-  name = "DevOps-prod-eastus-01-rg"
+  name = "DevOps1-prod-eastus-01-rg"
   location = "eastus"
   #resource block to create the azure resource group
 }
