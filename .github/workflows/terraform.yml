@@ -4,6 +4,8 @@ on:
     branches:
       - azure_rg_create
       - azure_gr_destroy
+  workflow_dispatch:
+    
 jobs:
   deploy:
     name: Azure RG deployment using GitHub Action and Terraform
@@ -24,8 +26,15 @@ jobs:
         id: get-folders 
         run: |
           echo "Detecting changed Terraform fodlers..."
+          
+          if [ "${{ github.event_name }}" = "push" ]; then
           folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
           | grep -Eo 'azure_resource_group_create/[^/]+/' | sort -u | tr '\n' ',' | sed 's/,$//')
+
+          else      
+            folders=$(ls -d azure_resource_group_create/*/ | tr '\n' ',' | sed 's/,$//')
+          fi
+
           echo "folders=$folders" >> $GITHUB_OUTPUT
           echo "valu of $GITHUB_OUTPUT"
 
@@ -43,6 +52,7 @@ jobs:
           IFS=',' read -ra ADDR <<< "${{ steps.get-folders.outputs.folders }}"
           for dir in "${ADDR[@]}"; do 
            echo "Processing folder: $dir"
+           cd "$dir" || { echo "Failed to cd into $dir"; exit 1; }
            echo "Current branch: $GITHUB_REF"
            echo "Changed folders: $folders"
            
@@ -56,6 +66,8 @@ jobs:
               terraform apply -auto-approve
            elif [[ "${GITHUB_REF}" == "refs/heads/azure_gr_destroy" ]]; then
               terraform destroy -auto-approve
+            else 
+              echo "Branch $GITHUB_REF does not trigger apply or destroy"  
            fi
 
            cd -
