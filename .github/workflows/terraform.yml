@@ -27,12 +27,12 @@ jobs:
         run: terraform plan
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/azure_gr_create'
+        if: github.ref == 'refs/heads/azure_rg_create'
         working-directory: azure_resource_group_create/01_rg
         run: terraform apply -auto-approve
 
       - name: Terraform Destory
-        if: github.ref == 'refs/heads/azure_gr_destory'
+        if: github.ref == 'refs/heads/azure_gr_destroy'
         working-directory: azure_resource_group_create/01_rg
         run: terraform destory -auto-approve
 
