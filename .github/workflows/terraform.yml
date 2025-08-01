@@ -20,10 +20,19 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Terraform Init
+        working-directory: azure_resource_group_create/01_rg
         run: terraform init
 
       - name: Terraform Plan
+        working-directory: azure_resource_group_create/01_rg
         run: terraform plan
 
       - name: Terraform Apply
+        if: github.ref == 'refs/heads/azure_gr_create'
+        working-directory: azure_resource_group_create/01_rg
         run: terraform apply -auto-approve
+
+      - name: Terraform Destory
+        if: github.ref == 'refs/heads/azure_gr_destory'
+        working-directory: azure_resource_group_create/01_rg
+        run: terraform destory -auto-approve
