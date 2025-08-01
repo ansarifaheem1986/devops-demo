@@ -31,6 +31,10 @@ jobs:
         working-directory: azure_resource_group_create/01_rg
         run: terraform apply -auto-approve
 
+      - name: Terraform Stat list
+        working-directory: azure_resource_group_create/01_rg
+        run: terraform state list
+
       - name: Terraform Destory
         if: github.ref == 'refs/heads/azure_gr_destroy'
         working-directory: azure_resource_group_create/01_rg
