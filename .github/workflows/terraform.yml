@@ -5,6 +5,10 @@ on:
       - azure_rg_create
       - azure_gr_destroy
   workflow_dispatch:
+    inputs:
+      folder:
+        description: 'Terraform folder to "Processing"
+        required: false
     
 jobs:
   deploy:
