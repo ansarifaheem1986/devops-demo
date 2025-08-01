@@ -10,7 +10,7 @@ terraform {
     resource_group_name  = "terraform-storage-files-01-rg"
     storage_account_name = "tfstatefilesdevprd"
     container_name       = "githubaction"
-    key                  = "azure_rg_create_destroy/rg.terraform.state"
+    key                  = "azure_rg_create_destroy/rg1.terraform.state"
   }
 }
 
