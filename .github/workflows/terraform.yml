@@ -1,5 +1,5 @@
 name: Azure Terraform deployment
-on:
+on: 
   push:
     branches:
       - azure_rg_create
@@ -61,3 +61,8 @@ jobs:
            cd -
            done        
       
+#Usage and details:
+#Push commits to the branch azure_rg_create to create/update the resource group.
+
+#Push commits (or even an empty commit) to the branch azure_rg_destroy to destroy the resources.
+
