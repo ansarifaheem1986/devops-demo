@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - azure_rg_create
-      - azure_rg_destroy
+      - azure_gr_destroy
   workflow_dispatch:
 
 jobs:
