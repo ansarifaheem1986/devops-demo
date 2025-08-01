@@ -26,8 +26,15 @@ jobs:
         id: get-folders 
         run: |
           echo "Detecting changed Terraform fodlers..."
+          
+          if [ "${{ github.event_name }}" = "push" ]; then
           folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
           | grep -Eo 'azure_resource_group_create/[^/]+/' | sort -u | tr '\n' ',' | sed 's/,$//')
+
+          else      
+            folders=$(ls -d azure_resource_group_create/*/ | tr '\n' ',' | sed 's/,$//')
+          fi
+
           echo "folders=$folders" >> $GITHUB_OUTPUT
           echo "valu of $GITHUB_OUTPUT"
 
