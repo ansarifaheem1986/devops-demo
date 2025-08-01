@@ -3,8 +3,7 @@ on:
   push:
     branches:
       - azure_rg_create
-      - main
-      - workflow_dispatch
+      - azure_gr_destroy
 jobs:
   deploy:
     name: Azure RG deployment using GitHub Action and Terraform
