@@ -1,67 +1,62 @@
 name: Azure Terraform deployment
-on: 
+
+on:
   push:
     branches:
       - azure_rg_create
       - azure_gr_destroy
+  workflow_dispatch:
+
 jobs:
   deploy:
     name: Azure RG deployment using GitHub Action and Terraform
-    runs-on: self-hosted  # or self-hosted if you have your own runner
-    outputs:
-      changed-folders: ${{ steps.get-folders.outputs.folders }}
+    runs-on: self-hosted
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Get Changed folders 
-        id: get-folders 
+      - name: Set folders to process
+        id: set-folders
         run: |
-          echo "Detecting changed Terraform fodlers..."
-          folders=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
-          | grep -Eo 'azure_resource_group_create/[^/]+/' | sort -u | tr '\n' ',' | sed 's/,$//')
+          # Hardcode folders here (or list dynamically if you want all folders)
+          folders="azure_resource_group_create/01_rg,azure_resource_group_create/02_rg,azure_resource_group_create/03_rg"
           echo "folders=$folders" >> $GITHUB_OUTPUT
-          echo "valu of $GITHUB_OUTPUT"
-
-      - name: Run terrform per folder #Split folders into array and iterate   
+      - name: Run terraform per folder
         run: |
-          folders="${{ steps.get-folders.outputs.folders }}"
+          folders="${{ steps.set-folders.outputs.folders }}"
           echo "Current branch: $GITHUB_REF"
-          echo "Changed folders: $folders"
-
+          echo "Folders to process: $folders"
           if [ -z "$folders" ]; then
-            echo "No changed folders detected; skipping terraform steps."
+            echo "No folders specified; exiting."
             exit 0
           fi
-
-          IFS=',' read -ra ADDR <<< "${{ steps.get-folders.outputs.folders }}"
-          for dir in "${ADDR[@]}"; do 
-           echo "Processing folder: $dir"
-           echo "Current branch: $GITHUB_REF"
-           echo "Changed folders: $folders"
-           
-           cd "$dir"
-
-           terraform init
-
-           terraform plan
-
-           if [[ "${GITHUB_REF}" == "refs/heads/azure_rg_create" ]]; then 
+          IFS=',' read -ra DIRS <<< "$folders"
+          for dir in "${DIRS[@]}"; do
+            folder=$(echo "$dir" | sed 's:/*$::')
+            echo "Processing folder: $folder"
+            if [ ! -d "$folder" ]; then
+              echo "Directory $folder does not exist; skipping."
+              continue
+            fi
+            cd "$folder" || { echo "Failed to cd into $folder"; exit 1; }
+            echo "Running terraform init in $folder"
+            terraform init
+            echo "Running terraform plan in $folder"
+            terraform plan
+            if [[ "$GITHUB_REF" == "refs/heads/azure_rg_create" ]]; then
+              echo "Running terraform apply in $folder"
               terraform apply -auto-approve
-           elif [[ "${GITHUB_REF}" == "refs/heads/azure_gr_destroy" ]]; then
+            elif [[ "$GITHUB_REF" == "refs/heads/azure_gr_destroy" ]]; then
+              echo "Running terraform destroy in $folder"
               terraform destroy -auto-approve
-           fi
-
-           cd -
-           done        
-      
-#Usage and details:
-#Push commits to the branch azure_rg_create to create/update the resource group.
-
-#Push commits (or even an empty commit) to the branch azure_rg_destroy to destroy the resources.
+            else
+              echo "Branch $GITHUB_REF does not trigger apply or destroy."
+            fi
+            cd - > /dev/null
+          done
