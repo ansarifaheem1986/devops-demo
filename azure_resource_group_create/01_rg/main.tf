@@ -24,5 +24,10 @@ provider "azurerm" {
 resource "azurerm_resource_group" "myrg" {
   name = "DevOps-prod-eastus-01-rg"
   location = "eastus"
+<<<<<<< HEAD
   #resource block to create the azure resource group
 }
+=======
+  #resource block to create the azure resource group*/
+}
+>>>>>>> 60f2563 (Updated the mainbranch)
