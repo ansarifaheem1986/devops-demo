@@ -30,3 +30,19 @@ jobs:
     steps:
       - name: Get code
         uses: actions/checkout@v3
+      - name: cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Build websites
+        run: npm run build
+      - name: Publish JS filename
+        id: publish
+        run: find dist/assest/*.js -type f -execdir echo '::set-output name=scritp-file::{}' ';'
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-file
