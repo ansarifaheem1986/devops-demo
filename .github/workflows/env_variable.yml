@@ -1,0 +1,40 @@
+name: Environment variable testing wf
+on: workflow_dispatch
+  #push:
+    #- main
+    #- dev
+env:
+  MONGODB_DB_NAME: gha-demo
+jobs:
+  test:
+    env:
+      MONGODB_CLUSTER_ADDRESS:
+      MONGODB_USERNAME: mydbname        # Dumy username and password
+      MONGODB_PASSWORD: XXhdasdhuewjhbffjrowi@123
+      PORT: 8080
+    runs-on: ubuntu-latest1
+    steps:
+      - name: Get code 
+        uses: actions/chedckout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-deps-${{ '**/package-lock.json' }}
+      - name: Install dependencies 
+        run: npm ci
+      - name: Run server
+        run: npm start & npx wait-on http://127.0.0.1:$PORT
+      - name: Run test
+        run: npm test
+      - name: Output information 
+        run: | 
+          echo "MONGODB_USERNAME: ${{ env.MONGODB_USERNAME }}"    # Expressions type access
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest1
+      steps:
+        - name: Output information
+          run: | 
+            echo "MONGODB_USERNAME: ${{ env.MONGODB_USERNAME }}"    # Expressions type access
+            echo "MONGODB_DB_NAME: $MONGODB_DB_NAME"                # Another way of accessing the variable name
