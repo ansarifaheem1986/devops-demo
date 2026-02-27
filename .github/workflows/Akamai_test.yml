@@ -62,10 +62,6 @@ on:
         type: boolean
         description: 'loyalty-profile-aa'
         default: true
-      badge_number:
-        type: string
-        description: Enter Badge number with 00
-        required: true
       user_stories:
         type: string
         description: 'User Stories (Ex: US12345, US56789)'
@@ -73,11 +69,11 @@ on:
       team_name:
         type: string
         description: Team Name
-        default: Loyalty - Login
+        default: falseLogin
       affected_config:
         type: string
         description: Affected server
-        default: Akamai GTM
+        default: Akamai GTM Domains for Digital Profile and Login
         required: true
       affected_datacenter:
         type: string
