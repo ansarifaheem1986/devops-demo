@@ -1,0 +1,155 @@
+name: Prod Digital Profile GTM Traffic Update
+
+# Prevent parallel GTM updates — only one run at a time
+concurrency:
+  group: gtm-traffic-prod-update
+  cancel-in-progress: false
+permissions:
+  contents: write
+  deployments: write
+  id-token: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      east-weight:
+        type: string
+        description: 'East US weight (0-100). East + West must equal 100'
+        default: '50'
+        required: true
+      west-weight:
+        type: string
+        description: 'West US weight (0-100). East + West must equal 100'
+        default: '50'
+        required: true
+      domain-account-management:
+        type: boolean
+        description: 'loyalty-account-management-aa'
+        default: true
+      domain-corporate-entity:
+        type: boolean
+        description: 'loyalty-corporate-entity-aa'
+        default: true
+      domain-customerprofile:
+        type: boolean
+        description: 'loyalty-customerprofile-aa'
+        default: true
+      domain-enrollment-service:
+        type: boolean
+        description: 'loyalty-enrollment-service-aa'
+        default: true
+      domain-login-authsvc:
+        type: boolean
+        description: 'loyalty-login-authsvc-aa'
+        default: true
+      domain-login-dataservice:
+        type: boolean
+        description: 'loyalty-login-dataservice-aa'
+        default: true
+      domain-login-messagingsvc:
+        type: boolean
+        description: 'loyalty-login-messagingsvc-aa'
+        default: true
+      domain-pnrsvc:
+        type: boolean
+        description: 'loyalty-pnrsvc-aa'
+        default: true
+      domain-premerge-service:
+        type: boolean
+        description: 'loyalty-premerge-service-aa'
+        default: true
+      domain-profile:
+        type: boolean
+        description: 'loyalty-profile-aa'
+        default: true
+      badge_number:
+        type: string
+        description: Enter Badge number with 00
+        required: true
+      user_stories:
+        type: string
+        description: 'User Stories (Ex: US12345, US56789)'
+        required: true
+      team_name:
+        type: string
+        description: Team Name
+        default: Loyalty - Login
+      affected_config:
+        type: string
+        description: Affected server
+        default: Akamai GTM
+        required: true
+      affected_datacenter:
+        type: string
+        description: Datacenter
+        default: East and West
+        required: true
+      artifact_location:
+        type: string
+        description: Artifact location
+        default: Akamai
+        required: true
+      empId:
+        description: 'Provide AA emp ID Ex:00XXXXXX for  PROD deployment'
+        type: string
+        required: true
+      changeDescription:
+        description: 'Provide description for  PROD deployment'
+        type: string
+        required: true
+
+jobs:
+  TicketCreation:
+    uses: AAInternal/loyalty-login-profile/.github/workflows/ticket_creation_notification.yaml@main
+    with:
+      change_record_description: ${{ inputs.changeDescription }}
+      badgenumber: ${{ inputs.empId }}
+      appname: Digital Loyalty Customer Account
+      team_name: ${{ inputs.team_name }}
+      configitems: ${{ inputs.affected_config }}
+      region: ${{ inputs.affected_datacenter }}
+      archerShortname: LoyCustAcc
+      create_release: false
+      user_stories: ${{ inputs.user_stories }}
+    secrets: inherit
+
+  digital-profile-gtm-update:
+    name: Switch Digital Profile GTM Traffic
+    needs: TicketCreation
+    runs-on: ubuntu-22.04
+    container: akamai/shell
+    timeout-minutes: 15
+
+    steps:
+      - name: Timestamp
+        run: echo "Deployment started at $(date)"
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Akamai EDGERC
+        id: copy-edgerc
+        run: |
+          echo -e "${{ secrets.GTM_ALERTS_EDGERC }}" > ~/.edgerc
+          chmod 600 ~/.edgerc
+          echo "EDGERC written and permissions set"
+
+      - name: Update GTM Traffic Weights
+        id: traffic-update
+        env:
+          EAST_WEIGHT: ${{ github.event.inputs.east-weight }}
+          WEST_WEIGHT: ${{ github.event.inputs.west-weight }}
+          DOMAIN_ACCOUNT_MGMT: ${{ github.event.inputs.domain-account-management }}
+          DOMAIN_CORPORATE_ENTITY: ${{ github.event.inputs.domain-corporate-entity }}
+          DOMAIN_CUSTOMERPROFILE: ${{ github.event.inputs.domain-customerprofile }}
+          DOMAIN_ENROLLMENT_SVC: ${{ github.event.inputs.domain-enrollment-service }}
+          DOMAIN_LOGIN_AUTHSVC: ${{ github.event.inputs.domain-login-authsvc }}
+          DOMAIN_LOGIN_DATASVC: ${{ github.event.inputs.domain-login-dataservice }}
+          DOMAIN_LOGIN_MSGSVC: ${{ github.event.inputs.domain-login-messagingsvc }}
+          DOMAIN_PNRSVC: ${{ github.event.inputs.domain-pnrsvc }}
+          DOMAIN_PREMERGE_SVC: ${{ github.event.inputs.domain-premerge-service }}
+          DOMAIN_PROFILE: ${{ github.event.inputs.domain-profile }}
+        working-directory: ./Akamai/
+        run: |
+          chmod u+x Digital_Profile_gtm_prod_update_weights.sh
+          ./Digital_Profile_gtm_prod_update_weights.sh
