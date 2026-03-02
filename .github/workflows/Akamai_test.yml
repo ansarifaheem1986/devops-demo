@@ -32,22 +32,8 @@ on:
         required: true
  
 jobs:
-  TicketCreation:
-    uses: AAInternal/loyalty-login-profile/.github/workflows/ticket_creation_notification.yaml@main
-    with:
-      change_record_description: ${{ inputs.changeDescription }}
-      badgenumber: ${{ inputs.empId }}
-      appname: Digital Loyalty Customer Account
-      team_name: Loyalty - Login
-      configitems: Akamai GTM
-      region: East and West
-      archerShortname: LoyCustAcc
-      create_release: false
-    secrets: inherit
- 
   digital-profile-gtm-update:
     name: Switch Digital Profile GTM Traffic
-    needs: TicketCreation
     runs-on: ubuntu-24.04
     container: akamai/shell
     timeout-minutes: 15
